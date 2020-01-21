@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+    <link rel="stylesheet" href="style.css">
+    <title>code E</title>
+</head>
+<body>
+    <!--Editor de texto-->
+    <div class="row">
+        <div id="idFilas" class="filas mt-1 ml-3 border border-primary">
+
+        </div>
+        <div class="marco border">
+            <textarea oninput="codeChange()" class="form-control" id="codeArea" rows="16"></textarea>
+        </div>
+    </div>
+
+    <!--Botones-->
+    <div class="ml-2 mt-2">
+        <button onclick="analizarCodigo()" type="button" class="btn btn-dark">Run</button>
+    </div>
+    <script src="app.js"></script>
+</body>
+</html>
