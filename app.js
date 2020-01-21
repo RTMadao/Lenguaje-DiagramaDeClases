@@ -6,8 +6,9 @@ var filas = document.getElementById("idFilas");
 var numberOfLines;
 var lines = [];
 var linesCode;
+var contenidoDiagrama = [];
 
-//Exprecion regular
+//Expreciones regulares
 const clase = /^Clase: [A-Z][a-zA-Z_]*;$/
 
 //se activa cada que se detecta un cambio en el textarea
@@ -35,16 +36,18 @@ function pintarFilas() {
     }
 }
 
+//haciendo uso de expreciones regulares busca errores linea por linea en el codigo
 function analizarCodigo() {
     linesCode = code.value.split('\n');
     console.log(linesCode);
     for (let i = 0; i < linesCode.length; i++) {
         const cadena = linesCode[i];
         if (clase.test(cadena)){
-            console.log(`nueva clase ${cadena.split(' ')[1]}`)
+            contenidoDiagrama.push({nombreClase: cadena.split(' ')[1].replace(';',''), atributos: [], metodos: [], relaciones: []})
         }
         else{
             console.log(`error en la linea ${i+1}`)
         }
     }
+    console.log(contenidoDiagrama)
 }
