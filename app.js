@@ -9,7 +9,8 @@ var linesCode;
 var contenidoDiagrama = [];
 
 //Expreciones regulares
-const clase = /^Clase: [A-Z][a-zA-Z_]*;$/
+const clase = /^Clase:\s[A-Z][a-zA-Z_]*(\s<{2}[A-Za-z,]*>{2}|);$/
+const relacion = /^[A-Z]*\s[A-Z][a-zA-Z_]*\s->\s[A-Z][a-zA-Z_]*\s/
 
 //se activa cada que se detecta un cambio en el textarea
 //se calcula el numero de final que hay en el texto encontrado en cada uno el salto de linea y contando el numero de saltos encontrados
