@@ -14,7 +14,8 @@ var contenidoDiagrama = [];
 var errores = [];
 
 //Expreciones regulares
-const clase = /^Clase: [A-Z][a-zA-Z_]*;$/
+const clase = /^Clase:\s[A-Z][a-zA-Z_]*(\s<{2}[A-Za-z,]*>{2}|);$/
+const relacion = /^[A-Z]*\s[A-Z][a-zA-Z_]*\s->\s[A-Z][a-zA-Z_]*\s/
 const atributo;
 const metodo;
 
