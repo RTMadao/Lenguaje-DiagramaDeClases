@@ -10,18 +10,26 @@
 </head>
 <body>
     <!--Editor de texto-->
-    <div class="row">
-        <div id="idFilas" class="filas mt-1 ml-3 border border-primary">
+    <div class="row" style="overflow: scroll;">
+        <div id="idFilas" class="filas border-right border-primary mt-1 ml-3">
 
         </div>
-        <div class="marco border">
-            <textarea oninput="codeChange()" class="form-control" id="codeArea" rows="16"></textarea>
+        <div class="marco">
+            <textarea oninput="codeChange()" class="mt-1 areaTexto" id="codeArea" rows="17"></textarea>
         </div>
     </div>
 
     <!--Botones-->
     <div class="ml-2 mt-2">
         <button onclick="analizarCodigo()" type="button" class="btn btn-dark">Run</button>
+    </div>
+
+    <!--Output-->
+    <div class="border ml-2 mt-2">
+        <h3>output</h3>
+        <div id="output" class="border output">
+
+        </div>
     </div>
     <script src="app.js"></script>
 </body>

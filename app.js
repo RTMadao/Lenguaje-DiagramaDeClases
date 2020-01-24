@@ -1,12 +1,17 @@
 //objetos HTML
 var code = document.getElementById("codeArea");
+var output = document.getElementById("output");
 var filas = document.getElementById("idFilas");
+
+//event listener
+code.addEventListener('keydown', autosize);
 
 //variables
 var numberOfLines;
 var lines = [];
 var linesCode;
 var contenidoDiagrama = [];
+var errores = [];
 
 //Expreciones regulares
 const clase = /^Clase: [A-Z][a-zA-Z_]*;$/
@@ -38,6 +43,7 @@ function pintarFilas() {
 
 //haciendo uso de expreciones regulares busca errores linea por linea en el codigo
 function analizarCodigo() {
+    errores = [];
     linesCode = code.value.split('\n');
     console.log(linesCode);
     for (let i = 0; i < linesCode.length; i++) {
@@ -47,7 +53,27 @@ function analizarCodigo() {
         }
         else{
             console.log(`error en la linea ${i+1}`)
+            errores.push({text: `error de sintaxis en la linea ${i+1}`, color: 'danger'})
         }
     }
     console.log(contenidoDiagrama)
+    mostrarSalida();
+}
+
+//redimeciona la altura del textarea
+function autosize(){
+  var el = this;
+  setTimeout(function(){
+    el.style.cssText = 'height:auto; padding:0';
+    el.style.cssText = 'height:' + el.scrollHeight + 'px';
+  },0);
+}
+
+//pinta los numero de las filas del codigo en el div lateral izquierdo
+function mostrarSalida() {
+    output.innerHTML = '';
+    for (let f = 0; f < errores.length; f++) {
+        const errorMesage = errores[f];
+        output.innerHTML += `<div class="alert alert-${errorMesage.color}" role="alert">${errorMesage.text}</div>`
+    }
 }
