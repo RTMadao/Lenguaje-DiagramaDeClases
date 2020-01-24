@@ -14,10 +14,12 @@ var contenidoDiagrama = [];
 var errores = [];
 
 //Expreciones regulares
-const clase = /^Clase:\s[A-Z][a-zA-Z_]*(\s<{2}[A-Za-z,]*>{2}|);$/
-const relacion = /^[A-Z]*\s[A-Z][a-zA-Z_]*\s->\s[A-Z][a-zA-Z_]*\s/
-const atributo;
-const metodo;
+const clase = /^Clase:\s+[A-Z][a-zA-Z_]*(\s+<{2}[A-Za-z,]*>{2}|);$/
+const relacion = /^[A-Z][a-zA-Z_]*\s+->\s+[A-Z][a-zA-Z_]*\s+\([A-Z]*(,\s*[A-Z_]*,\s*[A-Z_]*|)\);$/
+const atributo = /\s+/
+const metodo = /B{3}/
+const espacio = /\s+/g
+const abrirParentesis = /\(/g
 
 //se activa cada que se detecta un cambio en el textarea
 //se calcula el numero de final que hay en el texto encontrado en cada uno el salto de linea y contando el numero de saltos encontrados
@@ -52,10 +54,28 @@ function analizarCodigo() {
     for (let i = 0; i < linesCode.length; i++) {
         const cadena = linesCode[i];
         if (clase.test(cadena)){
-            contenidoDiagrama.push({nombreClase: cadena.split(' ')[1].replace(';',''), atributos: [], metodos: [], relaciones: []})
+            contenidoDiagrama.push({nombreClase: cadena.split(espacio)[1].replace(';',''), atributos: [], metodos: [], relaciones: []})
         }
-        else if (clase.test(cadena)){
-
+        else if (relacion.test(cadena)){
+            let rel = cadena.split(abrirParentesis);
+            let claseRelacion = rel[0].split(espacio)
+            claseRelacion.splice(1,1);
+            claseRelacion.pop();
+            claseRelacion[0] = contenidoDiagrama.find(diagrama =>  diagrama.nombreClase == claseRelacion[0]);
+            claseRelacion[1] = contenidoDiagrama.find(diagrama =>  diagrama.nombreClase == claseRelacion[1]);
+            console.log(claseRelacion);
+            if(claseRelacion[0] == undefined || claseRelacion[1] == undefined) errores.push({text: `La clase no ha sido definida - la linea ${i+1}`, color: 'danger'})
+            else{
+                let propiedadRelacion = rel[1].replace(espacio,'').replace(');','').split(',')
+                claseRelacion[0].relaciones.push({claseRelacionada: claseRelacion[1].nombreClase,tipoRelacion: propiedadRelacion[0]})
+            }
+        }
+        else if (atributo.test(cadena)){
+            let rel = cadena.split(espacio);
+            console.log(rel);
+        }
+        else if (metodo.test(cadena)){
+            console.log('relacioon correcta');
         }
         else{
             console.log(`error en la linea ${i+1}`)

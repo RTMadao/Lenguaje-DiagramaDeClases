@@ -1,0 +1,32 @@
+</comentarios/>
+
+</definir clases/>
+Clase: nombreClase1 <<keyword>>
+Clase: nombreClase2
+Clase: nombreClase3
+
+</relaciones/>
+nombreClase1 -> nombreClase2 (tipoRelacion) <<keyword>>
+nombreClase3 -> nombreClase2 (tipoRelacion, cardinalidadClase1, cardinalidadClase2)
+
+</atributos/>
+Atributos: nombreClase1 {
+    atributo1(tipoAtributo, modificadorAcceso),
+    atributo2(tipoAtributo, modificadorAcceso),
+    atributo3(tipoAtributo, modificadorAcceso)
+}
+
+</metodos/>
+Metodos: nombreClase1{
+    atributo1(tipoRetorna, modificadorAcceso, {parametro1,parametro2}),
+    atributo2(tipoRetorna, modificadorAcceso, {parametro}),
+    atributo3(tipoRetorna, modificadorAcceso)
+}
+
+</tipos de relaciones: ASOCIACION, HERENCIA, AGREGACION, COMPOSICION, DEPENDENCIA, REALIZACION/>
+</tipos de cardinalida: UNO, CERO_UNO, MUCHOS, CERO_MUCHOS, UNO_MUCHOS/>
+
+ejemplo
+Clase: A;
+Clase: B;
+A -> B (ASOCIACION, CERO_UNO, MUCHOS);
