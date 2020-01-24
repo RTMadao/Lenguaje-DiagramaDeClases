@@ -15,6 +15,8 @@ var errores = [];
 
 //Expreciones regulares
 const clase = /^Clase: [A-Z][a-zA-Z_]*;$/
+const atributo;
+const metodo;
 
 //se activa cada que se detecta un cambio en el textarea
 //se calcula el numero de final que hay en el texto encontrado en cada uno el salto de linea y contando el numero de saltos encontrados
@@ -50,6 +52,9 @@ function analizarCodigo() {
         const cadena = linesCode[i];
         if (clase.test(cadena)){
             contenidoDiagrama.push({nombreClase: cadena.split(' ')[1].replace(';',''), atributos: [], metodos: [], relaciones: []})
+        }
+        else if (clase.test(cadena)){
+
         }
         else{
             console.log(`error en la linea ${i+1}`)
