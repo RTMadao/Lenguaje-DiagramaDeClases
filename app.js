@@ -14,11 +14,9 @@ var contenidoDiagrama = [];
 var errores = [];
 
 //Expreciones regulares
-//const clase = /^Clase:\s+[A-Z][a-zA-Z_]*(\s+<{2}[A-Za-z,]*>{2}|);$/
-const clase = /^Clase:\s+[A-Z][A-Za-z_]*(\s+<{2}[a-z](,\s*[a-z]|[a-z])*>{2}|)\s*;$/
-const relacion = /^[A-Z]*\s+[A-Z][A-Za-z_]*\s+->\s+[A-Z][A-Za-z_]*\s*(\([A-Z][A-Z_]*,\s*[A-Z][A-Z_]*\s*\)\s*|)(<{2}[a-z](,\s*[a-z]|[a-z])*>{2}|);$/
-// /^[A-Z][a-zA-Z_]*\s+->\s+[A-Z][a-zA-Z_]*\s+\([A-Z]*(,\s*[A-Z_]*,\s*[A-Z_]*|)\);$/
-const atributo = /\s+/
+const clase = /^Clase\s+[A-Z][A-Za-z_]*(\s+<{2}[a-z]([a-z]|,\s*[a-z])*>{2}|)\s*;$/
+const relacion = /^[A-Z]+\s+[A-Z][A-Za-z_]*\s+->\s+[A-Z][A-Za-z_]*(\s+(\(\s*[A-Z][A-Z_]*\s*,\s*[A-Z][A-Z_]*\s*\)\s*(\s<{2}[a-z](,\s*[a-z]|[a-z])*>{2}|)|<{2}[a-z](,\s*[a-z]|[a-z])*>{2})|)\s*;$/
+const atributo = /^\{(\s|[a-z]+\s+[A-Za-z]+\s+[A-Za-z][A-Za-z_]*\s*,)*[a-z]+\s+[A-Za-z]+\s+[A-Za-z][A-Za-z_]*\s*\}$/
 const metodo = /B{3}/
 const espacio = /\s+/g
 const abrirParentesis = /\(/g
