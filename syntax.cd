@@ -6,14 +6,14 @@ Clase: nombreClase2
 Clase: nombreClase3
 
 </relaciones/>
-nombreClase1 -> nombreClase2 (tipoRelacion) <<keyword>>
-nombreClase3 -> nombreClase2 (tipoRelacion, cardinalidadClase1, cardinalidadClase2)
+tipoRelacion nombreClase1 -> nombreClase2 <<keyword>>
+tipoRelacion nombreClase3 -> nombreClase2 (cardinalidadClase1, cardinalidadClase2)
 
 </atributos/>
-Atributos: nombreClase1 {
-    atributo1(tipoAtributo, modificadorAcceso),
-    atributo2(tipoAtributo, modificadorAcceso),
-    atributo3(tipoAtributo, modificadorAcceso)
+Atributos nombreClase1 {
+    modificadorAcceso tipoAtributo atributo1,
+    modificadorAcceso tipoAtributo atributo2,
+    modificadorAcceso tipoAtributo atributo3
 }
 
 </metodos/>
