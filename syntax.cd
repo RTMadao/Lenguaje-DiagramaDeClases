@@ -27,6 +27,11 @@ Metodos: nombreClase1{
 </tipos de cardinalida: UNO, CERO_UNO, MUCHOS, CERO_MUCHOS, UNO_MUCHOS/>
 
 ejemplo
-Clase: A;
-Clase: B;
-A -> B (ASOCIACION, CERO_UNO, MUCHOS);
+Clase A;
+Clase B;
+Clase C <<interface>>;
+
+ASOCIACION A -> B (CERO_UNO, MUCHOS);
+ASOCIACION A -> B <<realice>>;
+
+Atributos A 
