@@ -16,9 +16,12 @@ var errores = [];
 //Expreciones regulares
 const clase = /^Clase\s+[A-Z][A-Za-z_]*(\s+<{2}[a-z]([a-z]|,\s*[a-z])*>{2}|)\s*;$/
 const relacion = /^[A-Z]+\s+[A-Z][A-Za-z_]*\s+->\s+[A-Z][A-Za-z_]*(\s+(\(\s*[A-Z][A-Z_]*\s*,\s*[A-Z][A-Z_]*\s*\)\s*(\s<{2}[a-z](,\s*[a-z]|[a-z])*>{2}|)|<{2}[a-z](,\s*[a-z]|[a-z])*>{2})|)\s*;$/
-const atributo = /^\{(\s|[a-z]+\s+[A-Za-z]+\s+[A-Za-z][A-Za-z_]*\s*,)*[a-z]+\s+[A-Za-z]+\s+[A-Za-z][A-Za-z_]*\s*\}$/
-const metodo = /^{(\s|[A-Z]+\s+[A-Za-z]+\s+[A-Za-z_]+(\s+\(\s*[A-Za-z]+\s+[A-Za-z]+(,\s*[A-Za-z]+\s+[A-Za-z]+)*(\s(\s|,\s*[A-Za-z]+\s+[A-Za-z]+)*|)\)|))/
+const atributo = /^Atributos\s+[A-Z][A-Za-z]*\s+{$/
+const bloqueAtributo = /^\{(\s|[a-z]+\s+[A-Za-z]+\s+[A-Za-z][A-Za-z_]*\s*,)*[a-z]+\s+[A-Za-z]+\s+[A-Za-z][A-Za-z_]*\s*\}$/
+const metodo = /^Metodos\s+[A-Z][A-Za-z]*\s+{$/
+const bloqueMetodo = /^{(\s|[A-Z]+\s+[A-Za-z]+\s+[A-Za-z_]+(\s+\(\s*[A-Za-z]+\s+[A-Za-z]+(,\s*[A-Za-z]+\s+[A-Za-z]+)*(\s(\s|,\s*[A-Za-z]+\s+[A-Za-z]+)*|)\)|)\s*,)*[A-Z]+\s+[A-Za-z]+\s+[A-Za-z_]+(\s+\(\s*[A-Za-z]+\s+[A-Za-z]+(,\s*[A-Za-z]+\s+[A-Za-z]+)*(\s(\s|,\s*[A-Za-z]+\s+[A-Za-z]+)*|)\)|)}$/
 const espacio = /\s+/g
+const lineaVacia = /^\s*$/
 const abrirParentesis = /\(/g
 
 //se activa cada que se detecta un cambio en el textarea
@@ -52,9 +55,13 @@ function analizarCodigo() {
     linesCode = code.value.split('\n');
     console.log(linesCode);
     for (let i = 0; i < linesCode.length; i++) {
-        const cadena = linesCode[i];
+        let cadena = linesCode[i];
         if (clase.test(cadena)){
-            contenidoDiagrama.push({nombreClase: cadena.split(espacio)[1].replace(';',''), atributos: [], metodos: [], relaciones: []})
+            cadena = cadena.replace(';','')
+            cadena = cadena.replace(/\s*,\s*/,',')
+            cadena = cadena.split(espacio)
+            if(cadena.length >= 3) cadena[1] = cadena[1].replace('<','').replace('>>','').split(',')
+            contenidoDiagrama.push({nombreClase: cadena[0][1], atributos: [], metodos: [], relaciones: [], keyWord: cadena[1]})
         }
         else if (relacion.test(cadena)){
             let rel = cadena.split(abrirParentesis);
@@ -71,13 +78,16 @@ function analizarCodigo() {
                 claseRelacion[0].relaciones.push({claseRelacionada: claseRelacion[1].nombreClase,tipoRelacion: propiedadRelacion[0]})
             }
         }
-        // else if (atributo.test(cadena)){
-        //     let rel = cadena.split(espacio);
-        //     console.log(rel);
-        // }
-        // else if (metodo.test(cadena)){
-        //     console.log('relacioon correcta');
-        // }
+        else if (atributo.test(cadena)){
+            let rel = cadena.split(espacio);
+            console.log(rel);
+        }
+        else if (metodo.test(cadena)){
+            console.log('relacioon correcta');
+        }
+        else if (espacio.test(cadena) || cadena == ""){
+            console.log('linea en blanco');
+        }
         else{
             console.log(`error en la linea ${i+1}`)
             errores.push({text: `error de sintaxis en la linea ${i+1}`, color: 'danger'})
