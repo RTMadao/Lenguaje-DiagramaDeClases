@@ -28,10 +28,24 @@ Metodos: nombreClase1{
 
 ejemplo
 Clase A;
-Clase B;
-Clase C <<interface>>;
+Clase B <<interface>>;
+Clase C <<interface, abstract>>;
+Clase D;
+Clase E;
 
-ASOCIACION A -> B (CERO_UNO, MUCHOS);
-ASOCIACION A -> B <<realice>>;
+DEPENDENCIA A -> D (CERO_UNO, MUCHOS);
+HERENCIA A -> C;
+REALIZACION D -> B <<realice>>;
+ASOCIACION A -> E (UNO, UNO) <<access>>;
 
-Atributos A 
+Atributos A {
+    public String nombre,
+    private int edad,
+    protect Boolean estaVivo
+}
+
+Metodos A {
+    public String vivir,
+    private int joder (int todoElDia),
+    protect void ganarAutomata (String jaja, int no)
+}
