@@ -14,8 +14,12 @@ var contenidoDiagrama = [];
 var errores = [];
 
 //Expreciones regulares
-const clase = /^Clase\s+[A-Z][A-Za-z_]*(\s+<{2}[a-z]([a-z]|,\s*[a-z])*>{2}|)\s*;$/
-const relacion = /^[A-Z]+\s+[A-Z][A-Za-z_]*\s+->\s+[A-Z][A-Za-z_]*(\s+(\(\s*[A-Z][A-Z_]*\s*,\s*[A-Z][A-Z_]*\s*\)\s*(\s<{2}[a-z](,\s*[a-z]|[a-z])*>{2}|)|<{2}[a-z](,\s*[a-z]|[a-z])*>{2})|)\s*;$/
+const clase = /^Clase\s+/
+const claseNombre = /^[A-Z][A-Za-z_]*\s*$/
+const keyWord = /^<{2}[a-z]([a-z]|,\s*[a-z])*>{2}\s*$/
+const relacion = /^[A-Z]+/
+const relacionTipo = /^(ASOCIACION|HERENCIA|AGREGACION|COMPOSICION|DEPENDENCIA|REALIZACION)/
+const relacionClases = /\s+[A-Z][A-Za-z_]*\s+->\s+[A-Z][A-Za-z_]*(\s+(\(\s*[A-Z][A-Z_]*\s*,\s*[A-Z][A-Z_]*\s*\)\s*(\s<{2}[a-z](,\s*[a-z]|[a-z])*>{2}|)|<{2}[a-z](,\s*[a-z]|[a-z])*>{2})|)\s*;$/
 const atributo = /^Atributos\s+[A-Z][A-Za-z]*\s+{$/
 const bloqueAtributo = /^\{(\s|[a-z]+\s+[A-Za-z]+\s+[A-Za-z][A-Za-z_]*\s*,)*[a-z]+\s+[A-Za-z]+\s+[A-Za-z][A-Za-z_]*\s*\}$/
 const metodo = /^Metodos\s+[A-Z][A-Za-z]*\s+{$/
@@ -49,21 +53,13 @@ function pintarFilas() {
 }
 
 //haciendo uso de expreciones regulares busca errores linea por linea en el codigo
-function analizarCodigo() {
+function analizarCodigoPass() {
     errores = [];
     contenidoDiagrama = [];
     linesCode = code.value.split('\n');
     for (let i = 0; i < linesCode.length; i++) {
         let cadena = linesCode[i];
-        if (clase.test(cadena)){
-            cadena = cadena.replace(';','')
-            cadena = cadena.replace(/\s*,\s*/,',')
-            cadena = cadena.split(espacio)
-            if(cadena.length >= 3) cadena[2] = cadena[2].replace('<<','').replace('>>','').split(',')
-            else cadena.push([])
-            contenidoDiagrama.push({nombreClase: cadena[1], atributos: [], metodos: [], relaciones: [], keyWord: cadena[2]})
-        }
-        else if (relacion.test(cadena)){
+        if (relacion.test(cadena)){
             let relacion = [];
             let claseRelacion
             let propiedadRelacion = []
@@ -139,7 +135,7 @@ function analizarCodigo() {
 
             for (let j = i+1; j < linesCode.length;) {
                 const line = linesCode[j];
-                cadena[2] = cadena[2] +" "+ line
+                cadena[2] = cadena[2] +"\n"+ line
                 linesCode.splice(j,1);                
                 if (line.search(/}/) >= 0){
                     cierraBloque = true
@@ -149,21 +145,31 @@ function analizarCodigo() {
             if (!cierraBloque) errores.push({text: `Se esperaba '}' - linea ${i+1}`, color: 'danger'})
 
             if (bloqueMetodo.test(cadena[2])){
-                cadena[2] = cadena[2].replace(/{/,'').replace(/}/,'').split(',')
-
+                cadena[2] = cadena[2].replace(/{/,'').replace(/}/,'').split('\n')
+                cadena[2].pop()
+                cadena[2].shift()
+                
                 for (let j = 0; j < cadena[2].length; j++) {
                     const element = cadena[2][j].split(/\(/);
-                    console.log(element);
                     let word = element[0];
                     word = word.split(espacio)
-                    if(word == "") word.splice(k,1)
+                    for (let k = 0; k < word.length; k++) {
+                        if(word[k] == "") word.splice(k,1) 
+                    }
                     console.log(word);
+                    element[0] = word
                     if(element.length > 1){
                         let params = element[1];
                         params = params.replace(/\s*/,'').replace(/\)/,'').split(',')
-                        console.log(params);
+                        for (let k = 0; k < params.length; k++) {
+                            if(params[k] == "") params.splice(k,1)   
+                        }
+                        for (let k = 0; k < params.length; k++) {
+                            params[k] = params[k].split(/\s+/)  
+                        }
+                        element[1] = params
                     }
-                    cadena[1].atributos.push({nombreAtributo: element[2], modificadorAcceso: element[0], tipoAtributo: element[1]})
+                    console.log(element)
                 }
             }
             else{
@@ -171,7 +177,55 @@ function analizarCodigo() {
             }
 
             console.log(cadena);
-            console.log(cadena[2]);
+        }
+        else if (cadena.replace(espacio,'') == ""){
+            console.log('linea en blanco');
+        }
+        else{
+            console.log(`error en la linea ${i+1}`)
+            errores.push({text: `error de sintaxis en la linea ${i+1}`, color: 'danger'})
+        }
+    }
+    console.log(contenidoDiagrama)
+    mostrarSalida();
+}
+
+function analizarCodigo() {
+    errores = [];
+    contenidoDiagrama = [];
+    linesCode = code.value.split('\n');
+    for (let i = 0; i < linesCode.length; i++) {
+        let cadena = linesCode[i];
+        if (clase.test(cadena)){
+            cadena = cadena.replace(/\s*,\s*/,',')
+            cadena = cadena.split(espacio)
+            if(claseNombre.test(cadena[1])){
+                if (keyWord.test(cadena[2]) || cadena[2] == undefined){
+                    if(cadena.length >= 3) cadena[2] = cadena[2].replace('<<','').replace('>>','').split(',')
+                    else cadena.push([])
+                    contenidoDiagrama.push({nombreClase: cadena[1], atributos: [], metodos: [], relaciones: [], keyWord: cadena[2]})
+                }
+                else errores.push({text: `Error de sintaxis de clase - linea ${i+1}`, color: 'danger'})
+            } 
+            else errores.push({text: `Nombre de clase no valido - linea ${i+1}`, color: 'danger'})
+        }
+        else if (relacion.test(cadena)){
+            cadena = cadena.split(/\(/);
+            let tipoAsociacion = cadena[0].split(espacio)[0]
+            let kw
+            if(relacionTipo.test(cadena)){
+                if (cadena.search(/</) >= 0){
+                    relacion.push(relacion[relacion.length-1].split(/<</)[1])
+                    kw = relacion[relacion.length-2].split(/</)[0]
+                }
+            }
+            else errores.push({text: `${tipoAsociacion} no es un tipo de relacion - linea ${i+1}`, color: 'danger'})
+        }
+        else if (atributo.test(cadena)){
+            
+        }
+        else if (metodo.test(cadena)){
+            
         }
         else if (cadena.replace(espacio,'') == ""){
             console.log('linea en blanco');

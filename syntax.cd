@@ -1,9 +1,9 @@
 </comentarios/>
 
 </definir clases/>
-Clase: nombreClase1 <<keyword>>
-Clase: nombreClase2
-Clase: nombreClase3
+Clase nombreClase1 <<keyword>>
+Clase nombreClase2
+Clase nombreClase3
 
 </relaciones/>
 tipoRelacion nombreClase1 -> nombreClase2 <<keyword>>
@@ -17,10 +17,10 @@ Atributos nombreClase1 {
 }
 
 </metodos/>
-Metodos: nombreClase1{
-    atributo1(tipoRetorna, modificadorAcceso, {parametro1,parametro2}),
-    atributo2(tipoRetorna, modificadorAcceso, {parametro}),
-    atributo3(tipoRetorna, modificadorAcceso)
+Metodos nombreClase1{
+    modificadorAcceso tipoAtributo metodo1,
+    modificadorAcceso tipoAtributo metodo2,
+    modificadorAcceso tipoAtributo metodo3
 }
 
 </tipos de relaciones: ASOCIACION, HERENCIA, AGREGACION, COMPOSICION, DEPENDENCIA, REALIZACION/>
