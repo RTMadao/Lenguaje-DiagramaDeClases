@@ -21,8 +21,9 @@ const relacion = /^[A-Z]+\s+[A-Z][A-Za-z_]*\s+->/
 const relacionTipo = /^(ASOCIACION|HERENCIA|AGREGACION|COMPOSICION|DEPENDENCIA|REALIZACION)/
 const relacionClases = /^[A-Z]+\s+[A-Z][A-Za-z_]*\s+->\s+[A-Z][A-Za-z_]*(\s+(\(\s*[A-Z][A-Z_]*\s*,\s*[A-Z][A-Z_]*\s*\)\s*(\s<{2}[a-z](,\s*[a-z]|[a-z])*>{2}|)|<{2}[a-z](,\s*[a-z]|[a-z])*>{2})|)\s*$/
 const atributo = /^Atributos\s+[A-Z][A-Za-z]*\s+{$/
-const declaraAtributo = /^\s*[a-z]+\s+[A-Za-z]+\s+[A-Za-z][0-9A-Za-z_]*\s*(,|)s*\}$/
+const declaraAtributo = /^\s*[a-z]+\s+[A-Za-z]+\s+[A-Za-z][0-9A-Za-z_]*\s*(,|)s*/
 const cierreBloque = /^}$/
+const modificadorAccesoValido = /publico|privado|protegido|paquete|derivado|estático/
 const metodo = /^Metodos\s+[A-Z][A-Za-z]*\s+{$/
 const bloqueMetodo = /^{(\s|[a-z]+\s+[A-Za-z]+\s+[A-Za-z_]+(\s+\(\s*[A-Za-z]+\s+[A-Za-z]+(,\s*[A-Za-z]+\s+[A-Za-z]+)*(\s(\s|,\s*[A-Za-z]+\s+[A-Za-z]+)*|)\)|)\s*,)*[a-z]+\s+[A-Za-z]+\s+[A-Za-z_]+(\s+\(\s*[A-Za-z]+\s+[A-Za-z]+(,\s*[A-Za-z]+\s+[A-Za-z]+)*(\s(\s|,\s*[A-Za-z]+\s+[A-Za-z]+)*|)\)|)\s*}$/
 const espacio = /\s+/g
@@ -60,42 +61,7 @@ function analizarCodigoPass() {
     linesCode = code.value.split('\n');
     for (let i = 0; i < linesCode.length; i++) {
         let cadena = linesCode[i];
-        if (atributo.test(cadena)){
-            let cierraBloque = false;
-            cadena = cadena.split(espacio)
-            cadena[1] = contenidoDiagrama.find(diagrama =>  diagrama.nombreClase == cadena[1]);
-            if(cadena[1] == undefined) errores.push({text: `La clase no ha sido definida - linea ${i+1}`, color: 'danger'})
-
-            for (let j = i+1; j < linesCode.length;) {
-                const line = linesCode[j];
-                cadena[2] = cadena[2] +" "+ line
-                linesCode.splice(j,1);                
-                if (line.search(/}/) >= 0){
-                    cierraBloque = true
-                    break;
-                }
-            }
-            if (!cierraBloque) errores.push({text: `Se esperaba '}' - linea ${i+1}`, color: 'danger'})
-
-            if (bloqueAtributo.test(cadena[2])){
-                cadena[2] = cadena[2].replace(/{/,'').replace(/}/,'').split(',')
-
-                for (let j = 0; j < cadena[2].length; j++) {
-                    const element = cadena[2][j].split(espacio);
-                    for (let k = 0; k < element.length; k++) {
-                        const word = element[k];
-                        if(word == "") element.splice(k,1)
-                    }
-                    cadena[1].atributos.push({nombreAtributo: element[2], modificadorAcceso: element[0], tipoAtributo: element[1]})
-                }
-            }
-            else{
-                errores.push({text: `Error de sintaxis en bloque de atributo - linea ${i+1}`, color: 'danger'})
-            }
-
-            
-        }
-        else if (metodo.test(cadena)){
+        if (metodo.test(cadena)){
             let cierraBloque = false;
             cadena = cadena.split(espacio)
             cadena[1] = contenidoDiagrama.find(diagrama =>  diagrama.nombreClase == cadena[1]);
@@ -223,16 +189,23 @@ function analizarCodigo() {
         }
         else if (atributo.test(cadena)){
             let clase = cadena.split(espacio)[1]
-            console.log(cadena.split(clase))
+            let cadenaAtributo
             clase = contenidoDiagrama.find(diagrama =>  diagrama.nombreClase == clase);
-
-            if(!clase == undefined){
+            if(clase != undefined){
                 let estaBloqueCerrado = false
                 while(!estaBloqueCerrado){
                     i++;
                     cadena = linesCode[i];
                     if(declaraAtributo.test(cadena)){
-                        console.log('buena crack maquina fiera')
+                        cadenaAtributo = cadena.split(espacio)
+                        cadenaAtributo.shift()
+                        console.log(cadenaAtributo)
+                        if(modificadorAccesoValido.test(cadenaAtributo[0])){
+                            clase.atributos.push({modificadorAcceso: cadenaAtributo[0], tipoAtributo: cadenaAtributo[1], nombreAtributo: cadenaAtributo[2]})
+                        }
+                        else{
+                            errores.push({text: `Modificador de acceso no valido - linea ${i+1}`, color: 'danger'})
+                        }
                     }
                     else if (cierreBloque.test(cadena)){
                         estaBloqueCerrado = true
@@ -262,6 +235,11 @@ function analizarCodigo() {
     }
     console.log(contenidoDiagrama)
     mostrarSalida();
+}
+
+function addError(listaErrores, mensaje, color){
+    listaErrores.push({text: mensaje, color: color})
+    return listaErrores
 }
 
 //redimeciona la altura del textarea
