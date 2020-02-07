@@ -18,7 +18,7 @@ Atributos nombreClase1 {
 
 </metodos/>
 Metodos nombreClase1{
-    modificadorAcceso tipoAtributo metodo1,
+    modificadorAcceso tipoAtributo metodo1 (parametro, parametro),
     modificadorAcceso tipoAtributo metodo2,
     modificadorAcceso tipoAtributo metodo3
 }
@@ -27,16 +27,16 @@ Metodos nombreClase1{
 </tipos de cardinalida: UNO, CERO_UNO, MUCHOS, CERO_MUCHOS, UNO_MUCHOS/>
 
 ejemplo
-Clase A;
-Clase B <<interface>>;
-Clase C <<interface, abstract>>;
-Clase D;
-Clase E;
+Clase A
+Clase B <<interface>>
+Clase C <<interface, abstract>>
+Clase D
+Clase E
 
-DEPENDENCIA A -> D (CERO_UNO, MUCHOS);
-HERENCIA A -> C;
-REALIZACION D -> B <<realice>>;
-ASOCIACION A -> E (UNO, UNO) <<access>>;
+DEPENDENCIA A -> D (CERO_UNO, MUCHOS)
+HERENCIA A -> C
+REALIZACION D -> B <<realice, access>>
+ASOCIACION A -> E (UNO, UNO) <<access>>
 
 Atributos A {
     public String nombre,

@@ -17,11 +17,12 @@ var errores = [];
 const clase = /^Clase\s+/
 const claseNombre = /^[A-Z][A-Za-z_]*\s*$/
 const keyWord = /^<{2}[a-z]([a-z]|,\s*[a-z])*>{2}\s*$/
-const relacion = /^[A-Z]+/
+const relacion = /^[A-Z]+\s+[A-Z][A-Za-z_]*\s+->/
 const relacionTipo = /^(ASOCIACION|HERENCIA|AGREGACION|COMPOSICION|DEPENDENCIA|REALIZACION)/
-const relacionClases = /\s+[A-Z][A-Za-z_]*\s+->\s+[A-Z][A-Za-z_]*(\s+(\(\s*[A-Z][A-Z_]*\s*,\s*[A-Z][A-Z_]*\s*\)\s*(\s<{2}[a-z](,\s*[a-z]|[a-z])*>{2}|)|<{2}[a-z](,\s*[a-z]|[a-z])*>{2})|)\s*;$/
+const relacionClases = /^[A-Z]+\s+[A-Z][A-Za-z_]*\s+->\s+[A-Z][A-Za-z_]*(\s+(\(\s*[A-Z][A-Z_]*\s*,\s*[A-Z][A-Z_]*\s*\)\s*(\s<{2}[a-z](,\s*[a-z]|[a-z])*>{2}|)|<{2}[a-z](,\s*[a-z]|[a-z])*>{2})|)\s*$/
 const atributo = /^Atributos\s+[A-Z][A-Za-z]*\s+{$/
-const bloqueAtributo = /^\{(\s|[a-z]+\s+[A-Za-z]+\s+[A-Za-z][A-Za-z_]*\s*,)*[a-z]+\s+[A-Za-z]+\s+[A-Za-z][A-Za-z_]*\s*\}$/
+const declaraAtributo = /^\s*[a-z]+\s+[A-Za-z]+\s+[A-Za-z][0-9A-Za-z_]*\s*(,|)s*\}$/
+const cierreBloque = /^}$/
 const metodo = /^Metodos\s+[A-Z][A-Za-z]*\s+{$/
 const bloqueMetodo = /^{(\s|[a-z]+\s+[A-Za-z]+\s+[A-Za-z_]+(\s+\(\s*[A-Za-z]+\s+[A-Za-z]+(,\s*[A-Za-z]+\s+[A-Za-z]+)*(\s(\s|,\s*[A-Za-z]+\s+[A-Za-z]+)*|)\)|)\s*,)*[a-z]+\s+[A-Za-z]+\s+[A-Za-z_]+(\s+\(\s*[A-Za-z]+\s+[A-Za-z]+(,\s*[A-Za-z]+\s+[A-Za-z]+)*(\s(\s|,\s*[A-Za-z]+\s+[A-Za-z]+)*|)\)|)\s*}$/
 const espacio = /\s+/g
@@ -59,40 +60,7 @@ function analizarCodigoPass() {
     linesCode = code.value.split('\n');
     for (let i = 0; i < linesCode.length; i++) {
         let cadena = linesCode[i];
-        if (relacion.test(cadena)){
-            let relacion = [];
-            let claseRelacion
-            let propiedadRelacion = []
-            cadena = cadena.replace(';','')
-            relacion = cadena.split(abrirParentesis);
-            if (cadena.search(/</) >= 0){
-                relacion.push(relacion[relacion.length-1].split(/<</)[1])
-                relacion[relacion.length-2] = relacion[relacion.length-2].split(/</)[0]
-            }
-            claseRelacion = relacion[0].split(espacio)
-            claseRelacion.splice(2,1);
-            if(claseRelacion[claseRelacion.length-1] == "")claseRelacion.pop();
-            claseRelacion[1] = contenidoDiagrama.find(diagrama =>  diagrama.nombreClase == claseRelacion[1]);
-            claseRelacion[2] = contenidoDiagrama.find(diagrama =>  diagrama.nombreClase == claseRelacion[2]);
-            if(claseRelacion[1] == undefined || claseRelacion[2] == undefined) errores.push({text: `La clase no ha sido definida - linea ${i+1}`, color: 'danger'})
-            else{
-                try {
-                    if (relacion[1].search(/\)/) >= 0){
-                        propiedadRelacion.push(relacion[1].replace(/\)/,'').replace(espacio,'').split(','))
-                        if (relacion.length > 2) propiedadRelacion.push(relacion[2].replace(/>>/,'').replace(espacio,'').split(','))
-                        else propiedadRelacion.push([])
-                    }else {
-                        propiedadRelacion.push([])
-                        propiedadRelacion.push(relacion[1].replace(/>>/,'').replace(espacio,'').split(','))
-                    }
-                } catch (error) {
-                    propiedadRelacion.push([])
-                    propiedadRelacion.push([])
-                }
-                claseRelacion[1].relaciones.push({claseRelacionada: claseRelacion[2].nombreClase, tipoRelacion: claseRelacion[0], cardinalidad: propiedadRelacion[0], keyWord: propiedadRelacion[1]})
-            }
-        }
-        else if (atributo.test(cadena)){
+        if (atributo.test(cadena)){
             let cierraBloque = false;
             cadena = cadena.split(espacio)
             cadena[1] = contenidoDiagrama.find(diagrama =>  diagrama.nombreClase == cadena[1]);
@@ -210,19 +178,76 @@ function analizarCodigo() {
             else errores.push({text: `Nombre de clase no valido - linea ${i+1}`, color: 'danger'})
         }
         else if (relacion.test(cadena)){
-            cadena = cadena.split(/\(/);
-            let tipoAsociacion = cadena[0].split(espacio)[0]
-            let kw
+            let tipoRelacion = null
             if(relacionTipo.test(cadena)){
-                if (cadena.search(/</) >= 0){
-                    relacion.push(relacion[relacion.length-1].split(/<</)[1])
-                    kw = relacion[relacion.length-2].split(/</)[0]
+                if(relacionClases.test(cadena)){
+                    let claseRelacion = [], cardinalidad = [], tipoRelacion = null, kw = []
+                    cadena = cadena.replace(/\s*,\s*/,',')
+                    tipoRelacion = cadena.split(espacio)
+                    claseRelacion.push(tipoRelacion[1])
+                    claseRelacion.push(tipoRelacion[3])
+                    tipoRelacion = tipoRelacion[0]
+                    if (cadena.search(/\(/) >= 0){
+                        cadena = cadena.split(/\(/)
+                        cadena = cadena[1].split(/\)/)
+                        cadena[0] = cadena[0].replace(/\(/,'').replace(/\)/,'')
+                        cadena[0] = cadena[0].split(',')
+                        cardinalidad.push(cadena[0][0])
+                        cardinalidad.push(cadena[0][1])
+                        cadena = cadena[1]
+                    }
+                    if (cadena.search(/</) >= 0){
+                        cadena = cadena.split(/</)[2]
+                        cadena = cadena.replace(/>>/,'')
+                        //if(cadena.search(/,/)) kw.push(cadena)
+                        //else{
+                            cadena = cadena.split(',') 
+                            for (let i = 0; i < cadena.length; i++) {
+                                const element = cadena[i];
+                                kw.push(element)
+                            }
+                        //}
+                    }
+                    claseRelacion[0] = contenidoDiagrama.find(diagrama =>  diagrama.nombreClase == claseRelacion[0]);
+                    claseRelacion[1] = contenidoDiagrama.find(diagrama =>  diagrama.nombreClase == claseRelacion[1]);
+                    if(claseRelacion[0] == undefined || claseRelacion[1] == undefined) errores.push({text: `La clase no ha sido definida - linea ${i+1}`, color: 'danger'})
+                    else{
+                        claseRelacion[0].relaciones.push({claseRelacionada: claseRelacion[1].nombreClase, tipoRelacion: tipoRelacion, cardinalidad: cardinalidad, keyWord: kw})
+                    }
+                }
+                else{
+                    errores.push({text: `Error de sintaxis - declaracion de relacion - linea ${i+1}`, color: 'danger'})
                 }
             }
-            else errores.push({text: `${tipoAsociacion} no es un tipo de relacion - linea ${i+1}`, color: 'danger'})
+            else errores.push({text: `${tipoRelacion} no es un tipo de relacion - linea ${i+1}`, color: 'danger'})
         }
         else if (atributo.test(cadena)){
-            
+            let clase = cadena.split(espacio)[1]
+            console.log(cadena.split(clase))
+            clase = contenidoDiagrama.find(diagrama =>  diagrama.nombreClase == clase);
+
+            if(!clase == undefined){
+                let estaBloqueCerrado = false
+                while(!estaBloqueCerrado){
+                    i++;
+                    cadena = linesCode[i];
+                    if(declaraAtributo.test(cadena)){
+                        console.log('buena crack maquina fiera')
+                    }
+                    else if (cierreBloque.test(cadena)){
+                        estaBloqueCerrado = true
+                    }
+                    else if (cadena.replace(espacio,'') == ""){
+                        i++;
+                    }
+                    else{
+                        errores.push({text: `error de sintaxis - declaracion de atributo - linea ${i+1}`, color: 'danger'})
+                    }
+                }
+            }
+            else{
+                errores.push({text: `${cadena.split(espacio)[1]} no es una clase - linea ${i+1}`, color: 'danger'})
+            }
         }
         else if (metodo.test(cadena)){
             
