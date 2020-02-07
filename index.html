@@ -15,22 +15,21 @@
 
         </div>
         <div class="marco">
-            <textarea oninput="codeChange()" class="mt-1 areaTexto" id="codeArea" rows="17"></textarea>
+            <textarea class="mt-1 areaTexto" id="codeArea" rows="17"></textarea>
+        </div>
+        <!--Output-->
+        <div class="border ml-2 mt-2 output">
+            <h3>output</h3>
+            <div id="output" class="border w-100">
+            </div>
         </div>
     </div>
 
     <!--Botones-->
     <div class="ml-2 mt-2">
-        <button onclick="analizarCodigo()" type="button" class="btn btn-dark">Run</button>
+        <button id="button" type="button" class="btn btn-dark">Run</button>
     </div>
-
-    <!--Output-->
-    <div class="border ml-2 mt-2">
-        <h3>output</h3>
-        <div id="output" class="border output">
-
-        </div>
-    </div>
-    <script src="app.js"></script>
+    <canvas id="canvas"></canvas>
+    <script src="bundle.js"></script>
 </body>
 </html>

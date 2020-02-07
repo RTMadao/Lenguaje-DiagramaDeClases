@@ -38,6 +38,9 @@ DEPENDENCIA A -> D (CERO_UNO, MUCHOS)
 HERENCIA A -> C
 REALIZACION D -> B <<realice, access>>
 ASOCIACION A -> E (UNO, UNO) <<access>>
+HERENCIA C -> E
+REALIZACION D -> B <<realice, access>>
+ASOCIACION A -> E (UNO, UNO) <<access>>
 
 Atributos A {
     publico String nombre,
@@ -45,8 +48,28 @@ Atributos A {
     protegido Boolean estaVivo
 }
 
+Atributos B {
+    publico String nombre,
+    protegido Boolean estaVivo
+}
+
+Atributos C {
+    publico String nombre,
+}
+
+Atributos D {
+    publico String nombre,
+    protegido Boolean estaVivo
+}
+
 Metodos A {
-    public String vivir,
-    private int joder (int todoElDia),
-    protect void ganarAutomata (String jaja, int no)
+    publico String vivir,
+    privado int joder (int todoElDia),
+    protegido void ganarAutomata (String jaja, int no)
+}
+
+Metodos E {
+    publico String vivir,
+    privado int joder (int todoElDia),
+    protegido void ganarAutomata (String jaja, int no)
 }

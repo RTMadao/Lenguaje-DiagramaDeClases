@@ -1,10 +1,16 @@
+var nomnoml = require('nomnoml');
+
 //objetos HTML
 var code = document.getElementById("codeArea");
 var output = document.getElementById("output");
 var filas = document.getElementById("idFilas");
+var canvas = document.getElementById('canvas');
+var btn = document.getElementById('button');
 
 //event listener
 code.addEventListener('keydown', autosize);
+code.addEventListener('input', codeChange);
+btn.addEventListener('click', analizarCodigo);
 
 //variables
 var numberOfLines;
@@ -25,7 +31,8 @@ const declaraAtributo = /^\s*[a-z]+\s+[A-Za-z]+\s+[A-Za-z][0-9A-Za-z_]*\s*(,|)s*
 const cierreBloque = /^}$/
 const modificadorAccesoValido = /publico|privado|protegido|paquete|derivado|estático/
 const metodo = /^Metodos\s+[A-Z][A-Za-z]*\s+{$/
-const bloqueMetodo = /^{(\s|[a-z]+\s+[A-Za-z]+\s+[A-Za-z_]+(\s+\(\s*[A-Za-z]+\s+[A-Za-z]+(,\s*[A-Za-z]+\s+[A-Za-z]+)*(\s(\s|,\s*[A-Za-z]+\s+[A-Za-z]+)*|)\)|)\s*,)*[a-z]+\s+[A-Za-z]+\s+[A-Za-z_]+(\s+\(\s*[A-Za-z]+\s+[A-Za-z]+(,\s*[A-Za-z]+\s+[A-Za-z]+)*(\s(\s|,\s*[A-Za-z]+\s+[A-Za-z]+)*|)\)|)\s*}$/
+const declaraMetodo = /[a-z]+\s+[A-Za-z]+\s+[A-Za-z_]+(\s+\(\s*[A-Za-z]+\s+[A-Za-z]+(,\s*[A-Za-z]+\s+[A-Za-z]+)*(\s(\s|,\s*[A-Za-z]+\s+[A-Za-z]+)*|)\)|)\s*(,|)/
+const bloqueMetodo = /^{(\s|[a-z]+\s+[A-Za-z]+\s+[A-Za-z_]+(\s+\(\s*[A-Za-z]+\s+[A-Za-z]+(,\s*[A-Za-z]+\s+[A-Za-z]+)*(\s(\s|,\s*[A-Za-z]+\s+[A-Za-z]+)*|)\)|)\s*,)*}$/
 const espacio = /\s+/g
 const abrirParentesis = /\(/g
 
@@ -55,75 +62,6 @@ function pintarFilas() {
 }
 
 //haciendo uso de expreciones regulares busca errores linea por linea en el codigo
-function analizarCodigoPass() {
-    errores = [];
-    contenidoDiagrama = [];
-    linesCode = code.value.split('\n');
-    for (let i = 0; i < linesCode.length; i++) {
-        let cadena = linesCode[i];
-        if (metodo.test(cadena)){
-            let cierraBloque = false;
-            cadena = cadena.split(espacio)
-            cadena[1] = contenidoDiagrama.find(diagrama =>  diagrama.nombreClase == cadena[1]);
-            if(cadena[1] == undefined) errores.push({text: `La clase no ha sido definida - linea ${i+1}`, color: 'danger'})
-
-            for (let j = i+1; j < linesCode.length;) {
-                const line = linesCode[j];
-                cadena[2] = cadena[2] +"\n"+ line
-                linesCode.splice(j,1);                
-                if (line.search(/}/) >= 0){
-                    cierraBloque = true
-                    break;
-                }
-            }
-            if (!cierraBloque) errores.push({text: `Se esperaba '}' - linea ${i+1}`, color: 'danger'})
-
-            if (bloqueMetodo.test(cadena[2])){
-                cadena[2] = cadena[2].replace(/{/,'').replace(/}/,'').split('\n')
-                cadena[2].pop()
-                cadena[2].shift()
-                
-                for (let j = 0; j < cadena[2].length; j++) {
-                    const element = cadena[2][j].split(/\(/);
-                    let word = element[0];
-                    word = word.split(espacio)
-                    for (let k = 0; k < word.length; k++) {
-                        if(word[k] == "") word.splice(k,1) 
-                    }
-                    console.log(word);
-                    element[0] = word
-                    if(element.length > 1){
-                        let params = element[1];
-                        params = params.replace(/\s*/,'').replace(/\)/,'').split(',')
-                        for (let k = 0; k < params.length; k++) {
-                            if(params[k] == "") params.splice(k,1)   
-                        }
-                        for (let k = 0; k < params.length; k++) {
-                            params[k] = params[k].split(/\s+/)  
-                        }
-                        element[1] = params
-                    }
-                    console.log(element)
-                }
-            }
-            else{
-                errores.push({text: `Error de sintaxis en bloque de metodo - linea ${i+1}`, color: 'danger'})
-            }
-
-            console.log(cadena);
-        }
-        else if (cadena.replace(espacio,'') == ""){
-            console.log('linea en blanco');
-        }
-        else{
-            console.log(`error en la linea ${i+1}`)
-            errores.push({text: `error de sintaxis en la linea ${i+1}`, color: 'danger'})
-        }
-    }
-    console.log(contenidoDiagrama)
-    mostrarSalida();
-}
-
 function analizarCodigo() {
     errores = [];
     contenidoDiagrama = [];
@@ -196,10 +134,10 @@ function analizarCodigo() {
                 while(!estaBloqueCerrado){
                     i++;
                     cadena = linesCode[i];
+                    cadena.replace(',','');
                     if(declaraAtributo.test(cadena)){
                         cadenaAtributo = cadena.split(espacio)
                         cadenaAtributo.shift()
-                        console.log(cadenaAtributo)
                         if(modificadorAccesoValido.test(cadenaAtributo[0])){
                             clase.atributos.push({modificadorAcceso: cadenaAtributo[0], tipoAtributo: cadenaAtributo[1], nombreAtributo: cadenaAtributo[2]})
                         }
@@ -223,23 +161,70 @@ function analizarCodigo() {
             }
         }
         else if (metodo.test(cadena)){
-            
+            let clase = cadena.split(espacio)[1]
+            let cadenaMetodo
+            clase = contenidoDiagrama.find(diagrama =>  diagrama.nombreClase == clase);
+            if(clase != undefined){
+                let estaBloqueCerrado = false
+                let parametros
+                while(!estaBloqueCerrado){
+                    i++;
+                    cadena = linesCode[i];
+                    if(declaraMetodo.test(cadena)){
+                        cadenaMetodo = cadena.split(/\(/)[0]
+                        parametros = cadena.split(/\(/)[1]
+                        cadenaMetodo = cadenaMetodo.split(espacio)
+                        cadenaMetodo.shift()
+                        if(parametros != undefined){
+                            parametros = parametros.replace(/\s*,\s*/,',').replace(/\)/,'')
+                            parametros = parametros.split(',')
+                            for (let i = 0; i < parametros.length; i++) {
+                                var p = parametros[i];
+                                p = p.split(espacio)
+                                if(p != '') parametros[i] = {tipoVariable: p[0], variable: p[1]}
+                                else parametros.splice(i,1)
+                            }
+                        }
+                        
+                        if(modificadorAccesoValido.test(cadenaMetodo[0])){
+                            clase.metodos.push({modificadorAcceso: cadenaMetodo[0], tipoMetodo: cadenaMetodo[1], nombreMetodo: cadenaMetodo[2], parametros: parametros})
+                        }
+                        else{
+                            errores.push({text: `Modificador de acceso no valido - linea ${i+1}`, color: 'danger'})
+                        }
+                    }
+                    else if (cierreBloque.test(cadena)){
+                        estaBloqueCerrado = true
+                    }
+                    else if (cadena.replace(espacio,'') == ""){
+                        i++;
+                    }
+                    else{
+                        errores.push({text: `error de sintaxis - declaracion de metodo - linea ${i+1}`, color: 'danger'})
+                    }
+                }
+            }
+            else{
+                errores.push({text: `${cadena.split(espacio)[1]} no es una clase - linea ${i+1}`, color: 'danger'})
+            }
         }
         else if (cadena.replace(espacio,'') == ""){
-            console.log('linea en blanco');
         }
         else{
-            console.log(`error en la linea ${i+1}`)
             errores.push({text: `error de sintaxis en la linea ${i+1}`, color: 'danger'})
         }
     }
+    contenidoDiagrama.forEach(clase => {
+        if(clase.atributos.length < 1) addError(`La clase ${clase.nombreClase} no tiene atributos asignados`, 'warning')
+        if(clase.metodos.length < 1) addError(`La clase ${clase.nombreClase} no tiene metodos asignados`, 'warning')
+    });
     console.log(contenidoDiagrama)
+    dibujar()
     mostrarSalida();
 }
 
-function addError(listaErrores, mensaje, color){
-    listaErrores.push({text: mensaje, color: color})
-    return listaErrores
+function addError(mensaje, color){
+    errores.push({text: mensaje, color: color})
 }
 
 //redimeciona la altura del textarea
@@ -258,4 +243,48 @@ function mostrarSalida() {
         const errorMesage = errores[f];
         output.innerHTML += `<div class="alert alert-${errorMesage.color}" role="alert">${errorMesage.text}</div>`
     }
+}
+
+function dibujar(){
+    var src = ''
+    for (let i = 0; i < contenidoDiagrama.length; i++) {
+        const clase = contenidoDiagrama[i];
+        src += `[ ${clase.nombreClase} | `
+        clase.atributos.forEach(atributo => {
+            if(clase.atributos.indexOf(atributo) == clase.atributos.length -1) src += ` ${atributo.nombreAtributo}: ${atributo.tipoAtributo} | `
+            else src += ` ${atributo.nombreAtributo}: ${atributo.tipoAtributo} ; `
+        });
+        clase.metodos.forEach(metodo => {
+            if(clase.metodos.indexOf(metodo) == clase.metodos.length -1) src += ` ${metodo.nombreMetodo}() `
+            else src += ` ${metodo.nombreMetodo}() ; `
+        });
+        src += `] \n`
+        clase.relaciones.forEach(relacion => {
+            let rel
+            switch (relacion.tipoRelacion) {
+                case 'ASOCIACION':
+                    rel = '-'
+                    break;
+                case 'HERENCIA':
+                    rel = '-:>'
+                    break;
+                case 'AGREGACION':
+                    rel = 'o->'
+                    break;
+                case 'COMPOSICION':
+                    rel = '+->'
+                    break;
+                case 'DEPENDENCIA':
+                    rel = '-->'
+                    break; 
+                case 'REALIZACION':
+                    rel = '--:>'
+                    break;    
+                default:
+                    break;
+            }
+            src += ` [${clase.nombreClase}] ${rel} [${relacion.claseRelacionada}] \n`
+        });
+    }
+    nomnoml.draw(canvas, src);
 }

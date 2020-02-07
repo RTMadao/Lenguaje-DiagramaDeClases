@@ -1,0 +1,25 @@
+{
+  "name": "automata",
+  "version": "1.0.0",
+  "description": "",
+  "main": "app.js",
+  "dependencies": {
+    "dagre": "^0.8.5",
+    "nomnoml": "^0.6.2"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/RTMadao/Lenguaje-DiagramaDeClases.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/RTMadao/Lenguaje-DiagramaDeClases/issues"
+  },
+  "homepage": "https://github.com/RTMadao/Lenguaje-DiagramaDeClases#readme"
+}
